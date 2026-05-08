@@ -1,7 +1,33 @@
 import { Link } from 'react-router-dom';
-import { FiBriefcase, FiGithub } from 'react-icons/fi';
+import { FiBriefcase } from 'react-icons/fi';
 
-export default function Footer() {
+/**
+ * @param {{ minimal?: boolean }} props
+ * minimal: no MultiBranch branding, no Jobs/Login/Register row (used on Browse Jobs).
+ */
+export default function Footer({ minimal = false }) {
+  if (minimal) {
+    return (
+      <footer
+        style={{
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-surface)',
+          padding: '24px 24px',
+          marginTop: 'auto',
+        }}
+      >
+        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
+            © {new Date().getFullYear()}{' '}
+            <Link to="/" style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+              HireFlow
+            </Link>
+          </p>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer style={{
       borderTop: '1px solid var(--border)',
