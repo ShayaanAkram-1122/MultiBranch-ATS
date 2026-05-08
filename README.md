@@ -3,7 +3,7 @@
 A full-stack web application built for a software house operating across multiple branches (Islamabad, Lahore, Karachi, Remote). This system automates the entire hiring process — from job postings to interview scheduling — for both candidates and HR teams.
 
 > **Live Demo:** `[Add your deployment URL here]`
-> **Backend API:** `[Add your backend URL here]`
+> **Backend API:** `[Add your backend URL here]` 
 
 ---
 
@@ -14,7 +14,7 @@ A full-stack web application built for a software house operating across multipl
 |-------|-----------|
 | Frontend | React.js + React Router |
 | Backend | Node.js + Express.js |
-| Database | MongoDB Atlas |
+| Database | MongoDB Atlas | 
 | File Storage | Cloudinary |
 | Authentication | JWT (JSON Web Tokens) |
 | Email | Gmail SMTP (Nodemailer) |
