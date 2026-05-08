@@ -1,6 +1,7 @@
 .sidebar-layout {
   display: flex;
   min-height: 100vh;
+  background: var(--surface);
 }
 
 /* ── Sidebar ─────────────────────────── */
@@ -14,6 +15,8 @@
   position: sticky;
   top: 0;
   flex-shrink: 0;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 .sidebar-brand {
   display: flex;
@@ -25,6 +28,13 @@
   color: var(--text-primary);
 }
 .sidebar-brand-icon { color: var(--primary); font-size: 20px; }
+
+.sidebar-logo .auth-logo-word {
+  font-size: 1.15rem;
+  color: var(--ink);
+  position: relative;
+  top: 2px;
+}
 .sidebar-role-badge {
   margin: 0 16px 20px;
   padding: 4px 10px;
@@ -115,6 +125,7 @@
   padding: 32px;
   overflow-x: hidden;
   max-width: calc(100vw - var(--sidebar-width));
+  background: var(--surface);
 }
 
 @media (max-width: 900px) {
