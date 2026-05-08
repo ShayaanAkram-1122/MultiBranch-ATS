@@ -49,6 +49,11 @@
 }
 .sidebar-role-applicant { background: rgba(34,211,238,0.12); color: var(--accent); }
 
+.sidebar-role-admin {
+  background: rgba(79, 58, 244, 0.12);
+  color: var(--accent);
+}
+
 .sidebar-nav {
   flex: 1;
   display: flex;
