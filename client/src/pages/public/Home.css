@@ -1,3 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap");
+
+/* ─────────────────────────────────────────────────────────
+   Home.css  —  HireFlow Multibranch ATS Landing Page
+   ───────────────────────────────────────────────────────── */
+
 .home-root {
   background-color: #f7f6ff;
   color: #0a0a14;
@@ -8,13 +14,6 @@
   /* prevent index.css dark vars from leaking in */
 }
 
-/* ─────────────────────────────────────────────────────────
-   Home.css  —  HireFlow Multibranch ATS Landing Page
-   ───────────────────────────────────────────────────────── */
-
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap");
-
-/* ─── TOKENS ─── */
 :root {
   --ink: #0a0a14;
   --ink-soft: #3a3a50;
@@ -35,6 +34,103 @@
   --radius-pill: 100px;
   --font-display: "Syne", sans-serif;
   --font-body: "DM Sans", sans-serif;
+}
+
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  height: 68px;
+  background: #ffffff !important;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(10, 10, 20, 0.08);
+  box-shadow: 0 1px 20px rgba(79, 58, 244, 0.06);
+}
+
+.nav-logo {
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #0a0a14;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.nav-logo-text {
+  letter-spacing: -0.5px;
+}
+
+.nav-logo-accent {
+  color: #4f3af4;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3a3a50 !important;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.nav-links a:hover {
+  color: #4f3af4 !important;
+}
+
+.nav-cta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn--ghost {
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  color: #3a3a50 !important;
+  background: transparent !important;
+  border: 1px solid rgba(10, 10, 20, 0.14) !important;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.btn--ghost:hover {
+  background: #f7f6ff !important;
+  border-color: #4f3af4 !important;
+  color: #4f3af4 !important;
+}
+
+.btn--primary {
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  color: #ffffff !important;
+  background: var(--accent) !important;
+  border: none !important;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.btn--primary:hover {
+  background: #3d2bd4 !important;
+  transform: translateY(-1px);
 }
 
 /* ─── RESET & BASE ─── */
