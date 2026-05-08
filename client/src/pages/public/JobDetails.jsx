@@ -53,11 +53,14 @@ export default function JobDetails() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
               <div>
                 <p style={{ color:'var(--text-muted)', fontSize:12, textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-                  {job.department || 'Engineering'}
+                  {job.company ? `${job.company} · ${job.department || '—'}` : (job.department || 'Engineering')}
                 </p>
                 <h1 style={{ fontSize:28, fontWeight:800, marginBottom:12 }}>{job.title}</h1>
                 <div style={{ display:'flex', gap:20, flexWrap:'wrap', fontSize:14, color:'var(--text-secondary)' }}>
                   <span style={{ display:'flex', alignItems:'center', gap:6 }}><FiMapPin /> {job.branch?.name || job.branch}</span>
+                  {job.workMode && <span>{job.workMode}</span>}
+                  {job.experienceLevel && <span>{job.experienceLevel}</span>}
+                  {job.salaryRange && <span style={{ fontWeight:700, color:'var(--text-primary)' }}>PKR {job.salaryRange}</span>}
                   <span style={{ display:'flex', alignItems:'center', gap:6 }}><FiUsers /> {job.seatsAvailable ?? job.seats ?? 1} seat(s) available</span>
                   <span style={{ display:'flex', alignItems:'center', gap:6 }}><FiClock /> Posted {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently'}</span>
                 </div>
@@ -87,7 +90,7 @@ export default function JobDetails() {
 
             {job.requirements && (
               <>
-                <h2 style={{ fontSize:18, fontWeight:700, margin:'28px 0 16px' }}>Requirements</h2>
+                <h2 style={{ fontSize:18, fontWeight:700, margin:'28px 0 16px' }}>Skills required</h2>
                 <p style={{ color:'var(--text-secondary)', lineHeight:1.8, whiteSpace:'pre-wrap' }}>{job.requirements}</p>
               </>
             )}
