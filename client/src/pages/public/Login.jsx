@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -28,13 +30,18 @@ export default function SignIn() {
   const handleDemo = (role) => {
     setLoading(true);
     setTimeout(() => {
+      const mockUser =
+        role === "candidate"
+          ? { _id: "demo1", name: "Demo Candidate", email: "candidate@demo.com", role: "applicant" }
+          : { _id: "demo2", name: "Demo Admin", email: "admin@demo.com", role: "admin" };
+      login(mockUser, "demo-token");
       setLoading(false);
-      navigate(role === "candidate" ? "/applicant/dashboard" : "/admin/dashboard");
-    }, 800);
+      navigate(role === "candidate" ? "/applicant/dashboard" : "/admin/dashboard", { replace: true });
+    }, 200);
   };
 
   return (
-    <div className="auth-root">
+    <div className="auth-root auth-root--signin">
       {/* Left panel */}
       <div className="auth-left">
         <div className="auth-left-inner">
@@ -51,6 +58,15 @@ export default function SignIn() {
           </Link>
 
           <div className="auth-left-body">
+            <div className="auth-mockup" aria-hidden="true">
+              <iframe
+                className="auth-mockup-frame"
+                src="/hireflow_dashboard_mockup.html"
+                title="HireFlow dashboard mockup"
+                loading="lazy"
+              />
+            </div>
+
             <div className="auth-quote">
               "HireFlow cut our time-to-hire by 63% across all 8 branches —
               it's the only tool our HR team actually loves using."
@@ -168,7 +184,7 @@ export default function SignIn() {
           <p className="auth-demo-label">TRY A DEMO ACCOUNT INSTANTLY</p>
 
           <div className="auth-demo-grid">
-            <button className="auth-demo-card" onClick={() => handleDemo("candidate")}>
+            <button className="auth-demo-card" type="button" onClick={() => handleDemo("candidate")}>
               <div className="adc-icon adc-icon--candidate">
                 <svg viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5"/>
@@ -181,7 +197,7 @@ export default function SignIn() {
               </div>
             </button>
 
-            <button className="auth-demo-card" onClick={() => handleDemo("admin")}>
+            <button className="auth-demo-card" type="button" onClick={() => handleDemo("admin")}>
               <div className="adc-icon adc-icon--admin">
                 <svg viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
