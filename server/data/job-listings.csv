@@ -1,0 +1,51 @@
+Company,Industry,City,Job Title,Job Type,Experience Level,Work Mode,Salary Range PKR,Skills Required,Posted Year
+Systems Limited,Software,Karachi,Software Engineer,Full-Time,Entry Level,Onsite,120000-180000,"Java, Spring Boot, SQL",2026
+Systems Limited,Software,Lahore,Frontend Developer,Full-Time,Mid Level,Hybrid,100000-160000,"React, JavaScript, CSS",2026
+Systems Limited,Software,Islamabad,DevOps Engineer,Full-Time,Senior,Hybrid,180000-300000,"Docker, Kubernetes, AWS",2026
+Netsol Technologies,Software,Lahore,AI Engineer,Full-Time,Mid Level,Onsite,150000-250000,"Python, ML, TensorFlow",2026
+Netsol Technologies,Software,Karachi,QA Engineer,Full-Time,Entry Level,Onsite,70000-120000,"Testing, Selenium, Jira",2026
+10Pearls,Software,Islamabad,Backend Engineer,Full-Time,Mid Level,Remote,180000-260000,"Node.js, MongoDB, APIs",2026
+10Pearls,Software,Lahore,Mobile App Developer,Full-Time,Mid Level,Hybrid,140000-220000,"Flutter, Firebase",2026
+Arbisoft,Software,Lahore,Software Engineer,Full-Time,Entry Level,Onsite,100000-170000,"C#, SQL, OOP",2026
+Arbisoft,Software,Karachi,Data Analyst,Full-Time,Mid Level,Hybrid,130000-190000,"Python, Power BI, SQL",2026
+Careem,Technology,Karachi,Product Analyst,Full-Time,Mid Level,Hybrid,170000-260000,"Analytics, SQL, Product Metrics",2026
+Careem,Technology,Lahore,Android Developer,Full-Time,Mid Level,Remote,180000-280000,"Kotlin, Android SDK",2026
+Jazz,Telecom,Islamabad,B2B Sales Consultant,Full-Time,Mid Level,Onsite,90000-160000,"Sales, CRM, Communication",2026
+Jazz,Telecom,Karachi,Network Engineer,Full-Time,Mid Level,Onsite,140000-220000,"CCNA, Networking",2026
+Telenor Pakistan,Telecom,Lahore,Assistant Manager Sales,Full-Time,Mid Level,Hybrid,120000-200000,"Sales, Business Development",2026
+Zong,Telecom,Islamabad,Business Relationship Manager,Full-Time,Mid Level,Hybrid,130000-210000,"Client Handling, CRM",2026
+PTCL,Telecom,Karachi,System Administrator,Full-Time,Mid Level,Onsite,120000-180000,"Linux, Servers, Networking",2026
+HBL,Banking,Karachi,Relationship Manager,Full-Time,Mid Level,Onsite,90000-170000,"Banking, Customer Service",2026
+HBL,Banking,Lahore,Cash Officer,Full-Time,Entry Level,Onsite,60000-100000,"Cash Handling, Finance",2026
+Meezan Bank,Banking,Islamabad,Branch Service Officer,Full-Time,Entry Level,Onsite,65000-110000,"Banking, Operations",2026
+UBL,Banking,Karachi,Data Scientist,Full-Time,Senior,Hybrid,200000-320000,"Python, ML, Analytics",2026
+MCB Bank,Banking,Lahore,Credit Analyst,Full-Time,Mid Level,Onsite,100000-180000,"Finance, Excel",2026
+Bank Alfalah,Banking,Islamabad,IT Support Engineer,Full-Time,Entry Level,Onsite,70000-120000,"Windows, Networking",2026
+Engro Corporation,Industrial,Karachi,Management Trainee,Full-Time,Entry Level,Onsite,80000-140000,"Communication, Leadership",2026
+Engro Fertilizers,Industrial,Lahore,Electrical Engineer,Full-Time,Mid Level,Onsite,150000-240000,"Electrical Systems",2026
+Lucky Cement,Manufacturing,Karachi,Mechanical Engineer,Full-Time,Mid Level,Onsite,140000-220000,"Mechanical Maintenance",2026
+Nestle Pakistan,FMCG,Lahore,Supply Chain Executive,Full-Time,Mid Level,Hybrid,130000-210000,"Supply Chain, ERP",2026
+Unilever Pakistan,FMCG,Karachi,Brand Executive,Full-Time,Mid Level,Hybrid,140000-230000,"Marketing, Branding",2026
+National Foods,FMCG,Karachi,QA Manager,Full-Time,Senior,Onsite,180000-280000,"QA, Food Safety",2026
+Foodpanda,Technology,Karachi,Operations Executive,Full-Time,Entry Level,Hybrid,70000-130000,"Operations, Excel",2026
+Daraz,Ecommerce,Lahore,Category Manager,Full-Time,Mid Level,Hybrid,140000-230000,"Ecommerce, Analytics",2026
+S&P Global,Finance,Islamabad,Associate Software Engineer,Full-Time,Entry Level,Hybrid,130000-210000,"Java, APIs",2026
+Contour Software,Software,Lahore,Software Support Engineer,Full-Time,Entry Level,Onsite,90000-150000,"SQL, Communication",2026
+Contour Software,Software,Karachi,Full Stack Developer,Full-Time,Mid Level,Hybrid,160000-250000,"React, Node.js",2026
+TRG Pakistan,Technology,Karachi,Cloud Engineer,Full-Time,Senior,Remote,220000-350000,"AWS, Azure",2026
+Afiniti,AI,Islamabad,Machine Learning Engineer,Full-Time,Senior,Hybrid,250000-400000,"ML, Deep Learning",2026
+Tkxel,Software,Lahore,UI UX Designer,Full-Time,Mid Level,Hybrid,100000-170000,"Figma, UX",2026
+VentureDive,Software,Karachi,Backend Developer,Full-Time,Mid Level,Remote,170000-260000,"Node.js, APIs",2026
+Creative Chaos,Software,Islamabad,Customer Success Manager,Full-Time,Mid Level,Remote,120000-190000,"Communication, CRM",2026
+Pakistan Revenue Automation,Technology,Islamabad,SOC Manager,Full-Time,Senior,Onsite,250000-380000,"Cybersecurity, SIEM",2026
+NADRA,Government,Islamabad,Deputy Assistant Director,Full-Time,Mid Level,Onsite,120000-200000,"Operations, Administration",2026
+METRO Pakistan,Retail,Karachi,Store Operations Manager,Full-Time,Mid Level,Onsite,130000-220000,"Retail Management",2026
+Packages Limited,Manufacturing,Lahore,Production Engineer,Full-Time,Entry Level,Onsite,90000-150000,"Production, Manufacturing",2026
+Fauji Fertilizer,Industrial,Islamabad,HR Executive,Full-Time,Mid Level,Hybrid,100000-170000,"HR, Recruitment",2026
+Philip Morris Pakistan,FMCG,Karachi,Territory Manager,Full-Time,Mid Level,Onsite,150000-240000,"Sales, Distribution",2026
+Bykea,Technology,Karachi,Operations Manager,Full-Time,Mid Level,Hybrid,120000-190000,"Operations, Logistics",2026
+Airlift,Technology,Lahore,Data Engineer,Full-Time,Senior,Remote,220000-340000,"Python, ETL, SQL",2026
+Bazaar Technologies,Ecommerce,Karachi,Account Executive,Full-Time,Entry Level,Onsite,80000-130000,"Sales, CRM",2026
+i2c Inc,Fintech,Lahore,Java Developer,Full-Time,Mid Level,Hybrid,150000-250000,"Java, Spring",2026
+Confiz,Software,Islamabad,Cloud Architect,Full-Time,Senior,Hybrid,280000-420000,"Azure, Cloud",2026
+Programmers Force,Software,Karachi,AI Research Engineer,Full-Time,Mid Level,Onsite,180000-300000,"LLMs, Python",2026

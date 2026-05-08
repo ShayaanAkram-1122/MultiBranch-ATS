@@ -8,69 +8,6 @@ import { jobService } from "../../services/job.service";
 
 const BRANCHES = ["All", "Karachi", "Islamabad", "Lahore"];
 
-const MOCK_JOBS = [
-  {
-    _id: "khi-1",
-    title: "Frontend Engineer",
-    department: "Engineering",
-    branch: "Karachi",
-    type: "Full-time",
-    seatsAvailable: 2,
-    createdAt: "2026-05-01",
-    description: "Build modern React experiences for our hiring suite.",
-  },
-  {
-    _id: "khi-2",
-    title: "HR Operations Associate",
-    department: "People",
-    branch: "Karachi",
-    type: "Full-time",
-    seatsAvailable: 1,
-    createdAt: "2026-04-28",
-    description: "Coordinate onboarding, HR ops, and candidate communications.",
-  },
-  {
-    _id: "isb-1",
-    title: "Backend Engineer (Node.js)",
-    department: "Engineering",
-    branch: "Islamabad",
-    type: "Full-time",
-    seatsAvailable: 2,
-    createdAt: "2026-05-03",
-    description: "Design APIs, data models, and scalable services.",
-  },
-  {
-    _id: "isb-2",
-    title: "QA Engineer",
-    department: "Quality",
-    branch: "Islamabad",
-    type: "Contract",
-    seatsAvailable: 1,
-    createdAt: "2026-04-25",
-    description: "Own test plans, automation, and release quality.",
-  },
-  {
-    _id: "lhe-1",
-    title: "UI/UX Designer",
-    department: "Design",
-    branch: "Lahore",
-    type: "Full-time",
-    seatsAvailable: 1,
-    createdAt: "2026-04-30",
-    description: "Create delightful experiences across candidate + admin portals.",
-  },
-  {
-    _id: "lhe-2",
-    title: "DevOps Engineer",
-    department: "Infrastructure",
-    branch: "Lahore",
-    type: "Full-time",
-    seatsAvailable: 1,
-    createdAt: "2026-04-23",
-    description: "Improve CI/CD, observability, and environment reliability.",
-  },
-];
-
 export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
@@ -84,12 +21,11 @@ export default function Jobs() {
       try {
         const params = {};
         if (branch !== "All") params.branch = branch;
-        if (search) params.search = search;
         const { data } = await jobService.getAll(params);
         const list = data?.jobs || data;
         if (alive) setJobs(Array.isArray(list) ? list : []);
       } catch {
-        if (alive) setJobs(MOCK_JOBS);
+        if (alive) setJobs([]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -106,7 +42,15 @@ export default function Jobs() {
       const title = (j.title || "").toLowerCase();
       const dept = (j.department || "").toLowerCase();
       const b = (j.branch?.name || j.branch || "").toLowerCase();
-      return title.includes(q) || dept.includes(q) || b.includes(q);
+      const company = (j.company || "").toLowerCase();
+      const skills = (j.requirements || "").toLowerCase();
+      return (
+        title.includes(q) ||
+        dept.includes(q) ||
+        b.includes(q) ||
+        company.includes(q) ||
+        skills.includes(q)
+      );
     });
   }, [jobs, search]);
 
@@ -125,7 +69,7 @@ export default function Jobs() {
               Browse Jobs
             </h1>
             <p style={{ color: "var(--text-muted)", marginBottom: 18 }}>
-              Roles across Karachi, Islamabad, and Lahore.
+              Live listings from Pakistani companies (PKR ranges). Filter by city or search.
             </p>
 
             <form
@@ -144,7 +88,7 @@ export default function Jobs() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search job title, department, or branch…"
+                placeholder="Search title, company, industry, city, or skills…"
                 style={{
                   border: "none",
                   outline: "none",
@@ -198,7 +142,7 @@ export default function Jobs() {
                             letterSpacing: 0.6,
                           }}
                         >
-                          {job.department || "Engineering"}
+                          {job.company || job.department || "—"}
                         </div>
                         <span className="badge badge-submitted">{job.type || "Full-time"}</span>
                       </div>
@@ -207,10 +151,21 @@ export default function Jobs() {
                         {job.title}
                       </h3>
 
+                      <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 10 }}>
+                        {job.department}
+                        {job.workMode ? ` · ${job.workMode}` : ""}
+                        {job.experienceLevel ? ` · ${job.experienceLevel}` : ""}
+                      </p>
+
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, color: "var(--text-secondary)", fontSize: 13 }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <FiMapPin /> {job.branch?.name || job.branch || "—"}
                         </span>
+                        {job.salaryRange && (
+                          <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                            PKR {job.salaryRange}
+                          </span>
+                        )}
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <FiUsers /> {job.seatsAvailable ?? job.seats ?? 1} seat(s)
                         </span>
