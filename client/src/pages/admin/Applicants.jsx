@@ -17,6 +17,7 @@ export default function AdminApplicants() {
 
   useEffect(() => { fetchApps(); }, []);
 
+  
   const fetchApps = async () => {
     setLoading(true);
     try {
