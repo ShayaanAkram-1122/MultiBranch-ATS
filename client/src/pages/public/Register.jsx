@@ -53,6 +53,15 @@ export default function SignUp() {
           </Link>
 
           <div className="auth-left-body">
+            <div className="auth-mockup" aria-hidden="true">
+              <iframe
+                className="auth-mockup-frame"
+                src="/hireflow_dashboard_mockup.html"
+                title="HireFlow dashboard mockup"
+                loading="lazy"
+              />
+            </div>
+
             <h2 className="auth-left-title">Start hiring smarter today.</h2>
             <p className="auth-left-desc">
               Join 340+ companies that use HireFlow to manage hiring across

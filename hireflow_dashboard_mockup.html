@@ -1,0 +1,175 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Sans:wght@400;500&display=swap');
+  .hf-wrap { font-family: 'DM Sans', sans-serif; background: #0d0f1a; border-radius: 16px; padding: 28px; max-width: 680px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.07); }
+  .hf-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .hf-logo { display: flex; align-items: center; gap: 8px; }
+  .hf-logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg,#5b4afa,#7c5cfc); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+  .hf-logo-icon svg { width: 14px; height: 14px; fill: #fff; }
+  .hf-logo-name { font-family: 'Syne', sans-serif; font-size: 15px; color: #fff; letter-spacing: -0.3px; }
+  .hf-logo-name span { color: #7c5cfc; }
+  .hf-nav { display: flex; gap: 6px; }
+  .hf-nav-item { font-size: 11px; color: rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .hf-nav-item.active { color: #a89cff; background: rgba(124,92,252,0.15); }
+  .hf-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#5b4afa,#2ec4b6); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .hf-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .hf-metric { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 12px 14px; }
+  .hf-metric-label { font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .hf-metric-value { font-family: 'Syne', sans-serif; font-size: 20px; color: #fff; font-weight: 700; }
+  .hf-metric-delta { font-size: 10px; color: #2ec4b6; margin-top: 2px; }
+  .hf-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hf-panel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; }
+  .hf-panel-title { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+  .hf-pipeline { display: flex; flex-direction: column; gap: 8px; }
+  .hf-stage { display: flex; align-items: center; gap: 10px; }
+  .hf-stage-label { font-size: 11px; color: rgba(255,255,255,0.55); width: 74px; flex-shrink: 0; }
+  .hf-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+  .hf-bar-fill { height: 100%; border-radius: 3px; }
+  .hf-stage-count { font-size: 11px; color: rgba(255,255,255,0.4); width: 22px; text-align: right; flex-shrink: 0; }
+  .hf-candidates { display: flex; flex-direction: column; gap: 8px; }
+  .hf-candidate { display: flex; align-items: center; gap: 10px; }
+  .hf-cand-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .hf-cand-info { flex: 1; min-width: 0; }
+  .hf-cand-name { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hf-cand-role { font-size: 10px; color: rgba(255,255,255,0.35); }
+  .hf-badge { font-size: 9px; padding: 2px 8px; border-radius: 4px; font-weight: 500; flex-shrink: 0; }
+  .badge-screen { background: rgba(91,74,250,0.2); color: #a89cff; }
+  .badge-inter { background: rgba(46,196,182,0.2); color: #2ec4b6; }
+  .badge-offer { background: rgba(245,158,11,0.2); color: #f59e0b; }
+  .badge-review { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+  .hf-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .hf-branches { display: flex; gap: 6px; }
+  .hf-branch { font-size: 10px; color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.05); border-radius: 5px; padding: 3px 8px; }
+  .hf-branch.active { color: #a89cff; background: rgba(124,92,252,0.12); }
+  .hf-ai-pill { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #2ec4b6; background: rgba(46,196,182,0.1); border-radius: 20px; padding: 4px 10px; }
+  .hf-ai-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ec4b6; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+</style>
+
+<h2 class="sr-only">HireFlow dashboard mockup preview showing pipeline stages, candidate list, and branch stats</h2>
+
+<div class="hf-wrap">
+  <div class="hf-topbar">
+    <div class="hf-logo">
+      <div class="hf-logo-icon">
+        <svg viewBox="0 0 14 14"><path d="M2 2h4v4H2zM8 2h4v4H8zM2 8h4v4H2zM10 8v2h2v2h-2v-2H8v-2z"/></svg>
+      </div>
+      <span class="hf-logo-name">Hire<span>Flow</span></span>
+    </div>
+    <div class="hf-nav">
+      <div class="hf-nav-item active">Pipeline</div>
+      <div class="hf-nav-item">Jobs</div>
+      <div class="hf-nav-item">Branches</div>
+      <div class="hf-nav-item">Reports</div>
+    </div>
+    <div class="hf-avatar">JD</div>
+  </div>
+
+  <div class="hf-metrics">
+    <div class="hf-metric">
+      <div class="hf-metric-label">Active roles</div>
+      <div class="hf-metric-value">24</div>
+      <div class="hf-metric-delta">↑ 3 this week</div>
+    </div>
+    <div class="hf-metric">
+      <div class="hf-metric-label">In pipeline</div>
+      <div class="hf-metric-value">187</div>
+      <div class="hf-metric-delta">↑ 12 today</div>
+    </div>
+    <div class="hf-metric">
+      <div class="hf-metric-label">Offers sent</div>
+      <div class="hf-metric-value">8</div>
+      <div class="hf-metric-delta" style="color:#f59e0b;">3 pending</div>
+    </div>
+    <div class="hf-metric">
+      <div class="hf-metric-label">Time to hire</div>
+      <div class="hf-metric-value">11d</div>
+      <div class="hf-metric-delta">↓ 63% faster</div>
+    </div>
+  </div>
+
+  <div class="hf-body">
+    <div class="hf-panel">
+      <div class="hf-panel-title">Pipeline stages</div>
+      <div class="hf-pipeline">
+        <div class="hf-stage">
+          <div class="hf-stage-label">Applied</div>
+          <div class="hf-bar-bg"><div class="hf-bar-fill" style="width:100%;background:#5b4afa;"></div></div>
+          <div class="hf-stage-count">187</div>
+        </div>
+        <div class="hf-stage">
+          <div class="hf-stage-label">Screened</div>
+          <div class="hf-bar-bg"><div class="hf-bar-fill" style="width:62%;background:#7c5cfc;"></div></div>
+          <div class="hf-stage-count">116</div>
+        </div>
+        <div class="hf-stage">
+          <div class="hf-stage-label">Interview</div>
+          <div class="hf-bar-bg"><div class="hf-bar-fill" style="width:36%;background:#2ec4b6;"></div></div>
+          <div class="hf-stage-count">67</div>
+        </div>
+        <div class="hf-stage">
+          <div class="hf-stage-label">Final round</div>
+          <div class="hf-bar-bg"><div class="hf-bar-fill" style="width:18%;background:#a89cff;"></div></div>
+          <div class="hf-stage-count">34</div>
+        </div>
+        <div class="hf-stage">
+          <div class="hf-stage-label">Offer</div>
+          <div class="hf-bar-bg"><div class="hf-bar-fill" style="width:4%;background:#f59e0b;"></div></div>
+          <div class="hf-stage-count">8</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hf-panel">
+      <div class="hf-panel-title">Recent candidates</div>
+      <div class="hf-candidates">
+        <div class="hf-candidate">
+          <div class="hf-cand-avatar" style="background:rgba(91,74,250,0.25);color:#a89cff;">SA</div>
+          <div class="hf-cand-info">
+            <div class="hf-cand-name">Sara Azeem</div>
+            <div class="hf-cand-role">Senior Designer</div>
+          </div>
+          <div class="hf-badge badge-inter">Interview</div>
+        </div>
+        <div class="hf-candidate">
+          <div class="hf-cand-avatar" style="background:rgba(46,196,182,0.2);color:#2ec4b6;">MK</div>
+          <div class="hf-cand-info">
+            <div class="hf-cand-name">Marcus Kim</div>
+            <div class="hf-cand-role">Backend Engineer</div>
+          </div>
+          <div class="hf-badge badge-offer">Offer sent</div>
+        </div>
+        <div class="hf-candidate">
+          <div class="hf-cand-avatar" style="background:rgba(245,158,11,0.2);color:#f59e0b;">PR</div>
+          <div class="hf-cand-info">
+            <div class="hf-cand-name">Priya Rajan</div>
+            <div class="hf-cand-role">Product Manager</div>
+          </div>
+          <div class="hf-badge badge-screen">Screening</div>
+        </div>
+        <div class="hf-candidate">
+          <div class="hf-cand-avatar" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);">TN</div>
+          <div class="hf-cand-info">
+            <div class="hf-cand-name">Tom Nielsen</div>
+            <div class="hf-cand-role">DevOps Lead</div>
+          </div>
+          <div class="hf-badge badge-review">Applied</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hf-footer">
+    <div class="hf-branches">
+      <div class="hf-branch active">All branches</div>
+      <div class="hf-branch">Dubai</div>
+      <div class="hf-branch">London</div>
+      <div class="hf-branch">NYC</div>
+      <div class="hf-branch">+4</div>
+    </div>
+    <div class="hf-ai-pill">
+      <div class="hf-ai-dot"></div>
+      AI screening active
+    </div>
+  </div>
+</div>
