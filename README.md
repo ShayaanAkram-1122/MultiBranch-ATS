@@ -27,22 +27,48 @@ A full-stack web application built for a software house operating across multipl
 
 ```
 MultiBranch-ATS/
-├── client/                   # React frontend
+│
+├── client/                          # React frontend
 │   ├── public/
 │   └── src/
-│       ├── components/       # Reusable UI components
-│       ├── pages/            # Route-level pages
-│       ├── context/          # Auth & global state
-│       ├── services/         # Axios API calls
-│       └── App.jsx
+│       ├── assets/                  # Images, icons, fonts
+│       ├── components/
+│       │   └── shared/              # Navbar, Footer, Loader, ProtectedRoute
+│       │
+│       ├── pages/
+│       │   ├── public/              # Accessible without login
+│       │   │   ├── Home.jsx         # Landing / job board
+│       │   │   ├── JobDetails.jsx   # Single job view
+│       │   │   ├── Login.jsx
+│       │   │   └── Register.jsx
+│       │   │
+│       │   ├── applicant/           # Logged-in candidates only
+│       │   │   ├── Dashboard.jsx    # Overview of applications
+│       │   │   ├── Profile.jsx      # Edit profile & upload docs
+│       │   │   ├── MyApplications.jsx
+│       │   │   └── ApplyJob.jsx
+│       │   │
+│       │   └── admin/               # HR / Admin only
+│       │       ├── Dashboard.jsx    # Stats & overview
+│       │       ├── Jobs.jsx         # Manage job postings
+│       │       ├── Applicants.jsx   # View & manage applicants
+│       │       ├── Interviews.jsx   # Schedule interviews
+│       │       └── Branches.jsx     # Manage branch locations
+│       │
+│       ├── context/                 # AuthContext (JWT + role)
+│       ├── services/                # Axios API call functions
+│       ├── hooks/                   # Custom React hooks
+│       ├── utils/                   # Helpers (format date, etc.)
+│       └── App.jsx                  # Routes + layout
 │
-├── server/                   # Express backend
-│   ├── config/               # DB & Cloudinary config
-│   ├── controllers/          # Route logic
-│   ├── middleware/            # Auth, role guards
-│   ├── models/               # Mongoose schemas
-│   ├── routes/               # API route definitions
-│   └── server.js
+├── server/                          # Express backend
+│   ├── config/                      # DB & Cloudinary connection
+│   ├── controllers/                 # Business logic per resource
+│   ├── middleware/                  # JWT auth, role guard
+│   ├── models/                      # Mongoose schemas
+│   ├── routes/                      # API route definitions
+│   ├── utils/                       # Email sender, helpers
+│   └── server.js                    # Entry point
 │
 ├── .gitignore
 └── README.md
