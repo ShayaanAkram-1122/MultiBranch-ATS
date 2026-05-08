@@ -186,7 +186,7 @@ export default function Jobs() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer minimal />
     </div>
   );
 }
