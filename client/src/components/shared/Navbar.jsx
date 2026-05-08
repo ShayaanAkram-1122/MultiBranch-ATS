@@ -19,14 +19,16 @@ export default function Navbar() {
       <div className="navbar-inner">
 
         {/* ── Brand ── */}
-        <Link to="/" className="navbar-brand">
-          <div className="brand-logo-mark">
-            <span className="brand-logo-letter">M</span>
-          </div>
-          <div className="brand-text">
-            <span className="brand-name">MultiBranch</span>
-            <span className="brand-tag">ATS</span>
-          </div>
+        <Link to="/" className="navbar-brand auth-logo" aria-label="HireFlow home">
+          <span className="auth-logo-icon" aria-hidden="true">
+            <span className="ali-h" />
+            <span className="ali-bar" />
+            <span className="ali-h ali-h2" />
+            <span className="ali-dot" />
+          </span>
+          <span className="auth-logo-word">
+            Hire<span className="alw-accent">Flow</span>
+          </span>
         </Link>
 
         {/* ── Divider ── */}

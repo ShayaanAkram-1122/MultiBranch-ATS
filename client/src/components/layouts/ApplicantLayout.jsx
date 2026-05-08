@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   FiGrid, FiFileText, FiUser, FiPlusCircle,
@@ -23,8 +23,17 @@ export default function ApplicantLayout({ children }) {
     <div className="sidebar-layout">
       <aside className="sidebar sidebar-applicant">
         <div className="sidebar-brand">
-          <FiBriefcase className="sidebar-brand-icon" />
-          <span>MultiBranch <strong>ATS</strong></span>
+          <Link to="/" className="auth-logo sidebar-logo" aria-label="HireFlow home">
+            <span className="auth-logo-icon" aria-hidden="true">
+              <span className="ali-h" />
+              <span className="ali-bar" />
+              <span className="ali-h ali-h2" />
+              <span className="ali-dot" />
+            </span>
+            <span className="auth-logo-word">
+              Hire<span className="alw-accent">Flow</span>
+            </span>
+          </Link>
         </div>
         <div className="sidebar-role-badge sidebar-role-applicant">Candidate Portal</div>
 
