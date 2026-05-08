@@ -34,7 +34,7 @@ export default function JobDetails() {
       <div style={{ textAlign:'center', padding:'80px 20px', color:'var(--text-muted)' }}>
         <FiBriefcase style={{ fontSize:40, marginBottom:16 }}/>
         <p>{error}</p>
-        <Link to="/" className="btn btn-outline" style={{ marginTop:16 }}>Back to Jobs</Link>
+        <Link to="/jobs" className="btn btn-outline" style={{ marginTop:16 }}>Back to Jobs</Link>
       </div>
     </>
   );
@@ -44,7 +44,7 @@ export default function JobDetails() {
       <Navbar />
       <div style={{ maxWidth:900, margin:'40px auto', padding:'0 24px', flex:1, width:'100%' }}>
 
-        <Link to="/" className="btn btn-outline btn-sm" style={{ marginBottom:24 }}>
+        <Link to="/jobs" className="btn btn-outline btn-sm" style={{ marginBottom:24 }}>
           <FiArrowLeft /> Back to Jobs
         </Link>
 

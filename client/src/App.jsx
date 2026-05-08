@@ -4,6 +4,7 @@ import ProtectedRoute from './components/shared/ProtectedRoute';
 
 // Public pages
 import Home       from './pages/public/Home';
+import Jobs       from './pages/public/Jobs';
 import Login      from './pages/public/Login';
 import Register   from './pages/public/Register';
 import JobDetails from './pages/public/JobDetails';
@@ -28,6 +29,7 @@ export default function App() {
         <Routes>
           {/* ── Public ── */}
           <Route path="/"          element={<Home />} />
+          <Route path="/jobs"      element={<Jobs />} />
           <Route path="/jobs/:id"  element={<JobDetails />} />
           <Route path="/login"     element={<Login />} />
           <Route path="/register"  element={<Register />} />

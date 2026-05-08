@@ -190,9 +190,16 @@ const PIPELINE = [
 function Navbar() {
   return (
     <nav className="navbar">
-      <Link to="/" className="nav-logo">
-        <span className="logo-dot" />
-        HireFlow
+      <Link to="/" className="nav-logo auth-logo">
+        <span className="auth-logo-icon">
+          <span className="ali-h" />
+          <span className="ali-bar" />
+          <span className="ali-h ali-h2" />
+          <span className="ali-dot" />
+        </span>
+        <span className="auth-logo-word">
+          Hire<span className="alw-accent">Flow</span>
+        </span>
       </Link>
       <ul className="nav-links">
         <li><a href="#features">Features</a></li>

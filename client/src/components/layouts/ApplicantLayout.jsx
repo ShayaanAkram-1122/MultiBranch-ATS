@@ -10,7 +10,7 @@ const applicantLinks = [
   { to: '/applicant/dashboard',    label: 'Dashboard',       icon: <FiGrid /> },
   { to: '/applicant/applications', label: 'My Applications', icon: <FiFileText /> },
   { to: '/applicant/profile',      label: 'My Profile',      icon: <FiUser /> },
-  { to: '/',                       label: 'Browse Jobs',      icon: <FiBriefcase /> },
+  { to: '/jobs',                   label: 'Browse Jobs',      icon: <FiBriefcase /> },
 ];
 
 export default function ApplicantLayout({ children }) {

@@ -69,7 +69,7 @@ export default function ApplicantDashboard() {
           <h1 className="dash-title">Welcome back, <span>{user?.name?.split(' ')[0] || 'Candidate'}</span></h1>
           <p className="dash-subtitle">Here's an overview of your job search activity</p>
         </div>
-        <Link to="/" className="btn btn-primary">
+        <Link to="/jobs" className="btn btn-primary">
           <FiBriefcase /> Browse Jobs
         </Link>
       </div>
@@ -141,7 +141,7 @@ export default function ApplicantDashboard() {
           <div className="dash-widget" style={{ marginBottom: 20 }}>
             <h3 className="dash-widget-title">Quick Actions</h3>
             <div className="quick-actions">
-              <Link to="/" className="quick-action-btn">
+              <Link to="/jobs" className="quick-action-btn">
                 <FiBriefcase className="qa-icon" />
                 <span>Browse Jobs</span>
               </Link>

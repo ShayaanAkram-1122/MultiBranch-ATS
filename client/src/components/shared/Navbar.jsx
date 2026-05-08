@@ -34,7 +34,7 @@ export default function Navbar() {
 
         {/* ── Desktop nav links ── */}
         <div className="navbar-links">
-          <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+          <NavLink to="/jobs" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             Browse Jobs
           </NavLink>
 
@@ -87,7 +87,7 @@ export default function Navbar() {
       {/* ── Mobile menu ── */}
       {open && (
         <div className="navbar-mobile">
-          <Link to="/"                       onClick={() => setOpen(false)} className="mobile-link">Browse Jobs</Link>
+          <Link to="/jobs"                   onClick={() => setOpen(false)} className="mobile-link">Browse Jobs</Link>
           {isApplicant && <>
             <Link to="/applicant/dashboard"    onClick={() => setOpen(false)} className="mobile-link">Dashboard</Link>
             <Link to="/applicant/applications" onClick={() => setOpen(false)} className="mobile-link">My Applications</Link>
