@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 // ─── DATA ───────────────────────────────────────────────
@@ -189,10 +190,10 @@ const PIPELINE = [
 function Navbar() {
   return (
     <nav className="navbar">
-      <a href="#" className="nav-logo">
+      <Link to="/" className="nav-logo">
         <span className="logo-dot" />
         HireFlow
-      </a>
+      </Link>
       <ul className="nav-links">
         <li><a href="#features">Features</a></li>
         <li><a href="#how">How it works</a></li>
@@ -200,8 +201,8 @@ function Navbar() {
         <li><a href="#pricing">Pricing</a></li>
       </ul>
       <div className="nav-cta">
-        <a href="#" className="btn btn--ghost">Sign in</a>
-        <a href="#" className="btn btn--primary">Get started →</a>
+        <Link to="/login" className="btn btn--ghost">Sign in</Link>
+        <Link to="/register" className="btn btn--primary">Get started →</Link>
       </div>
     </nav>
   );
