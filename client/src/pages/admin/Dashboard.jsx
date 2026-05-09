@@ -10,23 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './Dashboard.css';
 
-/* ── Mock data ── */
-const MOCK_STATS = { totalJobs: 12, totalApplications: 47, interviewsToday: 3, totalBranches: 4 };
-
-const MOCK_RECENT = [
-  { _id:'1', applicant:{ name:'Ahmed Raza',   email:'ahmed@mail.com' }, job:{ title:'Frontend Developer', branch:{ name:'Islamabad' } }, status:'shortlisted', createdAt:'2026-05-06' },
-  { _id:'2', applicant:{ name:'Sara Khan',    email:'sara@mail.com'  }, job:{ title:'Backend Engineer',   branch:{ name:'Lahore'    } }, status:'interview',   createdAt:'2026-05-05' },
-  { _id:'3', applicant:{ name:'Ali Hassan',   email:'ali@mail.com'   }, job:{ title:'UI/UX Designer',     branch:{ name:'Remote'    } }, status:'review',      createdAt:'2026-05-04' },
-  { _id:'4', applicant:{ name:'Zara Malik',   email:'zara@mail.com'  }, job:{ title:'DevOps Engineer',    branch:{ name:'Karachi'   } }, status:'submitted',   createdAt:'2026-05-03' },
-  { _id:'5', applicant:{ name:'Omar Sheikh',  email:'omar@mail.com'  }, job:{ title:'QA Engineer',        branch:{ name:'Islamabad' } }, status:'rejected',    createdAt:'2026-05-01' },
-];
-
-const MOCK_JOBS = [
-  { _id:'j1', title:'Frontend Developer', branch:'Islamabad', applications: 14, seats: 2, status:'active' },
-  { _id:'j2', title:'Backend Engineer',   branch:'Lahore',    applications:  9, seats: 1, status:'active' },
-  { _id:'j3', title:'UI/UX Designer',     branch:'Remote',    applications: 11, seats: 3, status:'active' },
-  { _id:'j4', title:'DevOps Engineer',    branch:'Karachi',   applications:  7, seats: 2, status:'active' },
-];
+// Removed Mock data fallbacks
 
 const STATUS_CLS = {
   submitted:   'badge-submitted',
@@ -44,12 +28,22 @@ const STATUS_LABEL = {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats]   = useState(MOCK_STATS);
-  const [recent, setRecent] = useState(MOCK_RECENT);
+  const [stats, setStats]   = useState({ totalJobs: 0, totalApplications: 0, interviewsToday: 0, totalBranches: 0 });
+  const [recent, setRecent] = useState([]);
+  const [jobs, setJobs]     = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/admin/stats').then(r => setStats(r.data)).catch(() => {});
-    api.get('/applications?limit=5').then(r => setRecent(r.data.applications || r.data)).catch(() => {});
+    Promise.all([
+      api.get('/admin/stats').catch(() => ({ data: { totalJobs: 0, totalApplications: 0, interviewsToday: 0, totalBranches: 0 } })),
+      api.get('/applications?limit=5').catch(() => ({ data: { applications: [] } })),
+      api.get('/jobs?limit=4').catch(() => ({ data: { jobs: [] } }))
+    ]).then(([statsRes, appsRes, jobsRes]) => {
+      setStats(statsRes.data || { totalJobs: 0, totalApplications: 0, interviewsToday: 0, totalBranches: 0 });
+      setRecent(appsRes.data.applications || appsRes.data || []);
+      setJobs(jobsRes.data.jobs || jobsRes.data || []);
+      setLoading(false);
+    });
   }, []);
 
   const statCards = [
@@ -112,28 +106,40 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map((app) => (
-                  <tr key={app._id}>
-                    <td>
-                      <div>
-                        <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{app.applicant?.name}</p>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{app.applicant?.email}</p>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 13 }}>{app.job?.title}</td>
-                    <td>
-                      <span className="branch-chip"><FiMapPin size={11} /> {app.job?.branch?.name || app.job?.branch}</span>
-                    </td>
-                    <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                      {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}
-                    </td>
-                    <td>
-                      <span className={`badge ${STATUS_CLS[app.status] || 'badge-submitted'}`}>
-                        {STATUS_LABEL[app.status] || app.status}
-                      </span>
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Loading...</td>
+                  </tr>
+                ) : recent.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                      No recent applications.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  recent.map((app) => (
+                    <tr key={app._id}>
+                      <td>
+                        <div>
+                          <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{app.applicant?.name || 'Unknown'}</p>
+                          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{app.applicant?.email}</p>
+                        </div>
+                      </td>
+                      <td style={{ fontSize: 13 }}>{app.job?.title}</td>
+                      <td>
+                        <span className="branch-chip"><FiMapPin size={11} /> {app.job?.branch?.name || app.job?.branch || '—'}</span>
+                      </td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                        {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}
+                      </td>
+                      <td>
+                        <span className={`badge ${STATUS_CLS[app.status] || 'badge-submitted'}`}>
+                          {STATUS_LABEL[app.status] || app.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -160,20 +166,28 @@ export default function AdminDashboard() {
               <Link to="/admin/jobs" className="btn btn-outline btn-sm"><FiEye /> Manage</Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {MOCK_JOBS.map((job) => (
-                <div className="mini-job-card" key={job._id}>
-                  <div>
-                    <p className="mini-job-title">{job.title}</p>
-                    <p className="mini-job-meta">
-                      <FiMapPin size={11} /> {job.branch} &bull; {job.seats} seat{job.seats > 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  <div className="mini-job-count">
-                    <span>{job.applications}</span>
-                    <span className="mini-job-count-label">applicants</span>
-                  </div>
+              {loading ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</div>
+              ) : jobs.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No active jobs found.
                 </div>
-              ))}
+              ) : (
+                jobs.slice(0, 4).map((job) => (
+                  <div className="mini-job-card" key={job._id}>
+                    <div>
+                      <p className="mini-job-title">{job.title}</p>
+                      <p className="mini-job-meta">
+                        <FiMapPin size={11} /> {job.branch?.name || job.branch || '—'} &bull; {job.seats || 1} seat{(job.seats || 1) > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="mini-job-count">
+                      <span>{job.applicationCount || 0}</span>
+                      <span className="mini-job-count-label">applicants</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
