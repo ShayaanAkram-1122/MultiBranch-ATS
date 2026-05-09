@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema(
     bio:          { type: String, default: '' },
     resumeUrl:    { type: String, default: '' },
     avatarUrl:    { type: String, default: '' },
+    isVerified:   { type: Boolean, default: false },
+    verifyOTP:    { type: String, default: null },
+    verifyOTPExpiry: { type: Date, default: null },
+    resetOTP:     { type: String, default: null },
+    resetOTPExpiry: { type: Date, default: null },
   },
   { timestamps: true }
 );

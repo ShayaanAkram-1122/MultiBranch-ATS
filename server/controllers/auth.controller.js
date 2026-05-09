@@ -1,5 +1,6 @@
 const jwt  = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendMail, templates } = require('../utils/mailer');
 
 function signToken(id) {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -7,30 +8,76 @@ function signToken(id) {
   });
 }
 
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+}
+
 // POST /api/auth/register
 async function register(req, res) {
   try {
     const { name, email, password, role } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
-    }
+    if (!name || !email || !password) return res.status(400).json({ message: 'Name, email, and password are required' });
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ message: 'Email already registered' });
+    if (exists) {
+      if (exists.isVerified !== false) return res.status(409).json({ message: 'Email already registered and verified.' });
+      
+      // Resend OTP for unverified existing account
+      const otp = generateOTP();
+      exists.verifyOTP = otp;
+      exists.verifyOTPExpiry = Date.now() + 10 * 60 * 1000;
+      exists.passwordHash = password; // Update password to new one
+      await exists.save();
+      
+      await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
+      return res.status(200).json({ message: 'Verification OTP resent to email.', email });
+    }
 
+    const otp = generateOTP();
     const user = await User.create({
       name,
       email,
-      passwordHash: password, // pre-save hook hashes it
+      passwordHash: password,
       role: role === 'admin' ? 'admin' : 'applicant',
+      isVerified: false,
+      verifyOTP: otp,
+      verifyOTPExpiry: Date.now() + 10 * 60 * 1000
     });
 
-    const token = signToken(user._id);
-    res.status(201).json({ token, user });
+    await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
+    res.status(201).json({ message: 'OTP sent to email. Please verify to continue.', email, needsVerification: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error during registration' });
+  }
+}
+
+// POST /api/auth/verify-email
+async function verifyEmail(req, res) {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'Email does not exist' });
+    if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
+    
+    if (user.verifyOTP !== otp || user.verifyOTPExpiry < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP code' });
+    }
+
+    user.isVerified = true;
+    user.verifyOTP = null;
+    user.verifyOTPExpiry = null;
+    await user.save();
+
+    await sendMail({ to: email, ...templates.welcome(user.name) });
+
+    const token = signToken(user._id);
+    res.json({ token, user, message: 'Email verified successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error during verification' });
   }
 }
 
@@ -38,17 +85,69 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
+    if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
 
     const user = await User.findOne({ email });
-    if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    if (!user) return res.status(404).json({ message: 'Email does not exist' });
+
+    if (!(await user.matchPassword(password))) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+
+    if (user.isVerified === false) {
+      return res.status(403).json({ message: 'Email not verified. Please verify your OTP.', needsVerification: true, email });
     }
 
     const token = signToken(user._id);
     res.json({ token, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+}
+
+// POST /api/auth/forgot-password
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'Email does not exist' });
+
+    const otp = generateOTP();
+    user.resetOTP = otp;
+    user.resetOTPExpiry = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    await sendMail({ to: email, ...templates.resetPassword(user.name, otp) });
+
+    res.json({ message: 'Password reset OTP sent to email', email });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// POST /api/auth/reset-password
+async function resetPassword(req, res) {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'Email does not exist' });
+
+    if (user.resetOTP !== otp || user.resetOTPExpiry < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    user.passwordHash = newPassword;
+    user.resetOTP = null;
+    user.resetOTPExpiry = null;
+    await user.save();
+
+    res.json({ message: 'Password successfully reset. You can now log in.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -60,7 +159,7 @@ async function getMe(req, res) {
   res.json(req.user);
 }
 
-// PUT /api/auth/me  — update profile fields
+// PUT /api/auth/me
 async function updateMe(req, res) {
   try {
     const allowed = ['name', 'phone', 'bio', 'avatarUrl', 'resumeUrl'];
@@ -75,4 +174,4 @@ async function updateMe(req, res) {
   }
 }
 
-module.exports = { register, login, getMe, updateMe };
+module.exports = { register, login, getMe, updateMe, verifyEmail, forgotPassword, resetPassword };
