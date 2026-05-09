@@ -9,15 +9,7 @@ import { applicationService } from '../../services/application.service';
 import { useAuth } from '../../context/AuthContext';
 import './Dashboard.css';
 
-/* ── Mock data shown while backend is offline ── */
-const MOCK_APPS = [
-  { _id: '1', job: { title: 'Frontend Developer',  branch: { name: 'Islamabad' } }, status: 'shortlisted', createdAt: '2026-04-20' },
-  { _id: '2', job: { title: 'Backend Engineer',    branch: { name: 'Lahore' }     }, status: 'interview',   createdAt: '2026-04-18' },
-  { _id: '3', job: { title: 'UI/UX Designer',      branch: { name: 'Remote' }     }, status: 'review',      createdAt: '2026-04-15' },
-  { _id: '4', job: { title: 'DevOps Engineer',     branch: { name: 'Karachi' }    }, status: 'submitted',   createdAt: '2026-04-10' },
-  { _id: '5', job: { title: 'QA Engineer',         branch: { name: 'Islamabad' }  }, status: 'rejected',    createdAt: '2026-04-05' },
-];
-
+// Removed MOCK_APPS fallback
 const STATUS_MAP = {
   submitted:   { label: 'Submitted',           cls: 'badge-submitted' },
   review:      { label: 'Under Review',        cls: 'badge-review' },
@@ -36,13 +28,14 @@ const TIMELINE = [
 
 export default function ApplicantDashboard() {
   const { user } = useAuth();
-  const [apps, setApps]       = useState(MOCK_APPS);
-  const [loading, setLoading] = useState(false);
+  const [apps, setApps]       = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     applicationService.myApplications()
       .then(({ data }) => setApps(data.applications || data))
-      .catch(() => {}); // keep mock data on error
+      .catch(() => setApps([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const counts = {
@@ -110,25 +103,39 @@ export default function ApplicantDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {apps.slice(0, 5).map((app) => {
-                  const s = STATUS_MAP[app.status] || STATUS_MAP.submitted;
-                  return (
-                    <tr key={app._id}>
-                      <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-                        {app.job?.title || '—'}
-                      </td>
-                      <td>
-                        <span className="branch-chip">
-                          <FiMapPin size={11} /> {app.job?.branch?.name || app.job?.branch || '—'}
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                        {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}
-                      </td>
-                      <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
-                    </tr>
-                  );
-                })}
+                {loading ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Loading...</td>
+                  </tr>
+                ) : apps.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                      You haven't applied to any jobs yet.
+                      <br/>
+                      <Link to="/jobs" className="btn btn-primary btn-sm" style={{ marginTop: '10px' }}>Browse Jobs</Link>
+                    </td>
+                  </tr>
+                ) : (
+                  apps.slice(0, 5).map((app) => {
+                    const s = STATUS_MAP[app.status] || STATUS_MAP.submitted;
+                    return (
+                      <tr key={app._id}>
+                        <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+                          {app.job?.title || '—'}
+                        </td>
+                        <td>
+                          <span className="branch-chip">
+                            <FiMapPin size={11} /> {app.job?.branch?.name || app.job?.branch || '—'}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                          {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
