@@ -7,7 +7,7 @@ const fs = require('fs');
 const { parse } = require('csv-parse/sync');
 
 // 5050 default avoids macOS AirPlay on 5000 and common dev collisions on 5001.
-const PORT = Number(process.env.PORT) || 5050;
+const PORT = Number(process.env.PORT) ||  5055;
 const CSV_PATH = path.join(__dirname, 'data', 'job-listings.csv');
 
 let cachedJobs = null;
