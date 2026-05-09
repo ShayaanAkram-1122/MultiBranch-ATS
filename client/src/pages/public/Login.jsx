@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -20,11 +21,15 @@ export default function SignIn() {
       return;
     }
     setLoading(true);
-    // TODO: replace with real auth call
-    setTimeout(() => {
+    try {
+      const { data } = await api.post("/auth/login", { email, password });
+      login(data.user, data.token);
+      navigate(data.user.role === "admin" ? "/admin/dashboard" : "/applicant/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
       setLoading(false);
-      navigate("/applicant/dashboard");
-    }, 1200);
+    }
   };
 
   const handleDemo = (role) => {

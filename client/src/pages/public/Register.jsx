@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -16,7 +19,7 @@ export default function SignUp() {
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.name || !form.email || !form.password) {
@@ -28,11 +31,20 @@ export default function SignUp() {
       return;
     }
     setLoading(true);
-    // TODO: replace with real registration call
-    setTimeout(() => {
+    try {
+      const { data } = await api.post("/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role === "admin" ? "admin" : "applicant",
+      });
+      login(data.user, data.token);
+      navigate(data.user.role === "admin" ? "/admin/dashboard" : "/applicant/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
       setLoading(false);
-      navigate(form.role === "candidate" ? "/applicant/dashboard" : "/admin/dashboard");
-    }, 1200);
+    }
   };
 
   return (
