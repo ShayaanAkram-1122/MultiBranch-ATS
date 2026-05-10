@@ -9,36 +9,92 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+/** Gmail over implicit TLS (465) or STARTTLS (587). OTP is fine — timeouts are almost always SMTP/network, not “OTP generation”. */
+function buildGmailTransport(port) {
+  const secure = port === 465;
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port,
+    secure,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
+    },
+    connectionTimeout: 45_000,
+    greetingTimeout: 20_000,
+    socketTimeout: 45_000,
+    tls: { servername: 'smtp.gmail.com' },
+    requireTLS: !secure,
+    family: 4,
+  });
+}
+
+async function sendWithGmailSmtp({ to, subject, html }) {
+  const from = `"HireFlow ATS" <${process.env.GMAIL_USER}>`;
+  const preferred = Number(process.env.SMTP_PORT || 465);
+  const ports = preferred === 465 ? [465, 587] : [587, 465];
+  const tried = [...new Set(ports)];
+
+  let lastErr = null;
+  for (const port of tried) {
+    const transport = buildGmailTransport(port);
+    try {
+      await transport.sendMail({ from, to, subject, html });
+      console.log(`[Mailer] Gmail SMTP ok → ${to} (port ${port})`);
+      return { ok: true };
+    } catch (err) {
+      lastErr = err;
+      console.error(`[Mailer] Gmail SMTP port ${port}:`, err.message);
+    }
+  }
+  return { ok: false, error: lastErr?.message || 'SMTP send failed' };
+}
+
+async function sendWithResend({ to, subject, html }) {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM,
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = typeof data.message === 'string' ? data.message : JSON.stringify(data) || res.statusText;
+      console.error('[Mailer] Resend:', msg);
+      return { ok: false, error: msg };
+    }
+    console.log(`[Mailer] Resend ok → ${to}`);
+    return { ok: true };
+  } catch (err) {
+    console.error('[Mailer] Resend:', err.message);
+    return { ok: false, error: err.message || 'Resend request failed' };
+  }
+}
 
 /**
  * sendMail({ to, subject, html })
+ * Prefer HTTPS providers on hosts that block or throttle outbound SMTP (common on PaaS).
+ * Set RESEND_API_KEY + RESEND_FROM, or GMAIL_USER + GMAIL_PASS (App Password).
+ * Optional: SMTP_PORT=587 if 465 keeps timing out.
  * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
  */
 async function sendMail({ to, subject, html }) {
+  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
+    return sendWithResend({ to, subject, html });
+  }
   if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-    console.error('[Mailer] Missing GMAIL_USER or GMAIL_PASS');
+    console.error('[Mailer] Set RESEND_API_KEY+RESEND_FROM or GMAIL_USER+GMAIL_PASS');
     return { ok: false, error: 'Email is not configured on the server' };
   }
-  try {
-    await transporter.sendMail({
-      from: `"HireFlow ATS" <${process.env.GMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
-    console.log(`[Mailer] Email sent to ${to}`);
-    return { ok: true };
-  } catch (err) {
-    console.error('[Mailer] Failed to send email:', err.message);
-    return { ok: false, error: err.message || 'Send failed' };
-  }
+  return sendWithGmailSmtp({ to, subject, html });
 }
 
 /**
