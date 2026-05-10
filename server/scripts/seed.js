@@ -1,10 +1,12 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Branch = require('../models/Branch');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 const connectDB = require('../config/db');
+const { seedJobListingsFromCsv } = require('./seedJobListings');
 
 async function seed() {
   await connectDB();
@@ -101,12 +103,16 @@ async function seed() {
     }
   ]);
 
+  console.log('Loading job-listings.csv into DB (does not remove the 4 demo jobs above)...');
+  await seedJobListingsFromCsv({ closeConnection: false });
+
   console.log('Database seeded successfully! 🎉');
   console.log('--------------------------------------------------');
   console.log('Admin Login:      admin@hireflow.com / admin123');
   console.log('Candidate Login:  candidate@hireflow.com / candidate123');
   console.log('--------------------------------------------------');
-  
+
+  await mongoose.connection.close();
   process.exit(0);
 }
 

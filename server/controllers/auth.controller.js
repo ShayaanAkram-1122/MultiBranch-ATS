@@ -162,12 +162,30 @@ async function getMe(req, res) {
 // PUT /api/auth/me
 async function updateMe(req, res) {
   try {
-    const allowed = ['name', 'phone', 'bio', 'avatarUrl', 'resumeUrl'];
+    const allowed = ['name', 'phone', 'bio', 'avatarUrl', 'resumeUrl', 'email'];
     const updates = {};
-    allowed.forEach((f) => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
+    allowed.forEach((f) => {
+      if (req.body[f] !== undefined) updates[f] = req.body[f];
+    });
+    if (req.body.profilePicUrl !== undefined) {
+      updates.avatarUrl = req.body.profilePicUrl;
+    }
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true });
-    res.json(user);
+    if (updates.email) {
+      updates.email = String(updates.email).toLowerCase().trim();
+      const dup = await User.findOne({
+        email: updates.email,
+        _id: { $ne: req.user._id },
+      });
+      if (dup) return res.status(409).json({ message: 'Email already in use' });
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+      runValidators: true,
+    }).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

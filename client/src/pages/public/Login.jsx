@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../services/api";
+import api, { DEV_BYPASS_PREFIX } from "../../services/api";
+
+/** Local dev / demo only — same account can open either portal (no API, no OTP). */
+const DEV_LOGIN_EMAIL = "test12@gmail.com";
+const DEV_LOGIN_PASSWORD = "12345";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -19,11 +23,40 @@ export default function SignIn() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const devCredentialsMatch =
+    email.trim().toLowerCase() === DEV_LOGIN_EMAIL.toLowerCase() &&
+    password === DEV_LOGIN_PASSWORD;
+
+  const handleDevPortalLogin = (role) => {
+    setError("");
+    setMessage("");
+    const mockUser =
+      role === "admin"
+        ? {
+            _id: "dev-unified",
+            name: "Developer (HR / Admin)",
+            email: DEV_LOGIN_EMAIL,
+            role: "admin",
+          }
+        : {
+            _id: "dev-unified",
+            name: "Developer (Candidate)",
+            email: DEV_LOGIN_EMAIL,
+            role: "applicant",
+          };
+    login(mockUser, `${DEV_BYPASS_PREFIX}:${role}`);
+    navigate(role === "admin" ? "/admin/dashboard" : "/applicant/dashboard", {
+      replace: true,
+    });
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); setMessage("");
     if (!email || !password) return setError("Please fill in all fields.");
-    
+
+    if (devCredentialsMatch) return;
+
     setLoading(true);
     try {
       const { data } = await api.post("/auth/login", { email, password });
@@ -92,19 +125,6 @@ export default function SignIn() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemo = (role) => {
-    setLoading(true);
-    setTimeout(() => {
-      const mockUser =
-        role === "candidate"
-          ? { _id: "demo1", name: "Demo Candidate", email: "candidate@demo.com", role: "applicant" }
-          : { _id: "demo2", name: "Demo Admin", email: "admin@demo.com", role: "admin" };
-      login(mockUser, "demo-token");
-      setLoading(false);
-      navigate(role === "candidate" ? "/applicant/dashboard" : "/admin/dashboard", { replace: true });
-    }, 200);
   };
 
   return (
@@ -178,9 +198,32 @@ export default function SignIn() {
                 </div>
               </div>
 
-              <button type="submit" className={`auth-btn-primary ${loading ? "auth-btn--loading" : ""}`} disabled={loading}>
-                {loading ? <span className="auth-spinner" /> : "Sign In"}
-              </button>
+              {devCredentialsMatch ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <p className="auth-form-sub" style={{ margin: 0, textAlign: "center" }}>
+                    Developer sign-in — choose portal (no server or email step).
+                  </p>
+                  <button
+                    type="button"
+                    className="auth-btn-primary"
+                    onClick={() => handleDevPortalLogin("applicant")}
+                  >
+                    Sign in as Candidate
+                  </button>
+                  <button
+                    type="button"
+                    className="auth-btn-primary"
+                    style={{ background: "var(--ink)", color: "#fff" }}
+                    onClick={() => handleDevPortalLogin("admin")}
+                  >
+                    Sign in as HR / Admin
+                  </button>
+                </div>
+              ) : (
+                <button type="submit" className={`auth-btn-primary ${loading ? "auth-btn--loading" : ""}`} disabled={loading}>
+                  {loading ? <span className="auth-spinner" /> : "Sign In"}
+                </button>
+              )}
             </form>
           )}
 

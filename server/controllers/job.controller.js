@@ -1,4 +1,9 @@
 const Job = require('../models/Job');
+const Branch = require('../models/Branch');
+
+function escapeRegex(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // GET /api/jobs
 async function getJobs(req, res) {
@@ -6,19 +11,29 @@ async function getJobs(req, res) {
     const { branch, search, type, workMode, isOpen } = req.query;
     const filter = {};
 
-    if (branch)   filter.branch  = branch;
+    if (branch && branch !== 'All') {
+      const branchDocs = await Branch.find({
+        city: new RegExp(`^${escapeRegex(branch.trim())}$`, 'i'),
+      });
+      if (branchDocs.length) {
+        filter.branch = { $in: branchDocs.map((b) => b._id) };
+      } else {
+        filter.branch = { $in: [] };
+      }
+    }
     if (type)     filter.type    = type;
     if (workMode) filter.workMode = workMode;
     if (isOpen !== undefined) filter.isOpen = isOpen === 'true';
     else filter.isOpen = true; // default: only open jobs
 
     if (search) {
-      const re = new RegExp(search, 'i');
+      const re = new RegExp(escapeRegex(search), 'i');
       filter.$or = [
         { title: re },
         { description: re },
         { department: re },
         { requirements: re },
+        { company: re },
       ];
     }
 
