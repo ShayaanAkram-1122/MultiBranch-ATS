@@ -29,11 +29,42 @@ async function getInterviews(req, res) {
 // POST /api/interviews  — admin
 async function scheduleInterview(req, res) {
   try {
-    const { application: appId, scheduledAt, location, notes } = req.body;
+    const appId = req.body.application;
+    const scheduledAtRaw = req.body.scheduledAt || req.body.dateTime;
+    const location = req.body.location || 'Online (Google Meet)';
+    const notes = req.body.notes ?? req.body.message ?? '';
 
-    const interview = await Interview.create({ application: appId, scheduledAt, location, notes });
+    if (!appId || !scheduledAtRaw) {
+      return res.status(400).json({ message: 'application and scheduledAt (or dateTime) are required' });
+    }
 
-    // Update application status
+    const scheduledAt = new Date(scheduledAtRaw);
+    if (Number.isNaN(scheduledAt.getTime())) {
+      return res.status(400).json({ message: 'Invalid date/time' });
+    }
+
+    const appDoc = await Application.findById(appId);
+    if (!appDoc) return res.status(404).json({ message: 'Application not found' });
+
+    if (appDoc.status === 'Rejected') {
+      return res.status(400).json({ message: 'Cannot schedule an interview for a rejected application' });
+    }
+
+    if (!['Shortlisted', 'Interview Scheduled'].includes(appDoc.status)) {
+      return res.status(400).json({
+        message: 'Shortlist the candidate first, then schedule the interview from the Interviews page.',
+      });
+    }
+
+    await Interview.deleteMany({ application: appId });
+
+    const interview = await Interview.create({
+      application: appId,
+      scheduledAt,
+      location,
+      notes,
+    });
+
     const app = await Application.findByIdAndUpdate(
       appId,
       { status: 'Interview Scheduled' },
@@ -42,13 +73,12 @@ async function scheduleInterview(req, res) {
       .populate('applicant', 'name email')
       .populate('job',       'title');
 
-    // Email notification
     if (app) {
       const { subject, html } = templates.interviewScheduled(
         app.applicant.name,
         app.job.title,
         scheduledAt,
-        location || 'Online (Google Meet)'
+        location
       );
       await sendMail({ to: app.applicant.email, subject, html });
     }
@@ -85,6 +115,7 @@ async function deleteInterview(req, res) {
   try {
     const interview = await Interview.findByIdAndDelete(req.params.id);
     if (!interview) return res.status(404).json({ message: 'Interview not found' });
+    await Application.findByIdAndUpdate(interview.application, { status: 'Shortlisted' });
     res.json({ message: 'Interview cancelled' });
   } catch (err) {
     console.error(err);

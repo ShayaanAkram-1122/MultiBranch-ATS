@@ -3,6 +3,7 @@ import { FiUser, FiMail, FiPhone, FiSave, FiUpload } from 'react-icons/fi';
 import ApplicantLayout from '../../components/layouts/ApplicantLayout';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { uploadFileToCloudinary } from '../../utils/cloudinaryUpload';
 
 export default function Profile() {
   const { user, login, token } = useAuth();
@@ -28,16 +29,16 @@ export default function Profile() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const uploadAvatar = async (file) => {
+    setError('');
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('upload_preset', import.meta.env.VITE_CLOUDINARY_PRESET || 'ats_uploads');
-      const res  = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD}/upload`, { method:'POST', body:fd });
-      const data = await res.json();
-      setForm(f => ({ ...f, profilePicUrl: data.secure_url }));
-    } catch { setError('Avatar upload failed.'); }
-    finally { setUploading(false); }
+      const url = await uploadFileToCloudinary(file);
+      setForm((f) => ({ ...f, profilePicUrl: url }));
+    } catch (e) {
+      setError(e?.message || 'Avatar upload failed.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
