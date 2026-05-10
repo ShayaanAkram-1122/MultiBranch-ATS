@@ -1,22 +1,28 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     role: "candidate",
   });
+  const [step, setStep] = useState(1);
+  const [otp, setOtp] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.name || !form.email || !form.password) {
@@ -28,11 +34,37 @@ export default function SignUp() {
       return;
     }
     setLoading(true);
-    // TODO: replace with real registration call
-    setTimeout(() => {
+    try {
+      const { data } = await api.post("/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role === "admin" ? "admin" : "applicant",
+      });
+      setMessage(data.message);
+      setStep(2); // Move to OTP step
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
       setLoading(false);
-      navigate(form.role === "candidate" ? "/applicant/dashboard" : "/admin/dashboard");
-    }, 1200);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!otp) return setError("Please enter the OTP.");
+    
+    setLoading(true);
+    try {
+      const { data } = await api.post("/auth/verify-email", { email: form.email, otp });
+      login(data.user, data.token);
+      navigate(data.user.role === "admin" ? "/admin/dashboard" : "/applicant/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,138 +141,172 @@ export default function SignUp() {
           </div>
 
           {error && <div className="auth-alert">{error}</div>}
+          {message && <div className="auth-alert" style={{ background: '#d1fae5', color: '#065f46', borderColor: '#a7f3d0' }}>{message}</div>}
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            {/* Full Name */}
-            <div className="auth-field">
-              <label className="auth-label">Full Name</label>
-              <div className="auth-input-wrap">
-                <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <input
-                  type="text"
-                  className="auth-input"
-                  placeholder="Your full name"
-                  value={form.name}
-                  onChange={set("name")}
-                  autoComplete="name"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="auth-field">
-              <label className="auth-label">Email address</label>
-              <div className="auth-input-wrap">
-                <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
-                  <path d="M2.5 6.5L10 11l7.5-4.5M3 5h14a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <input
-                  type="email"
-                  className="auth-input"
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={set("email")}
-                  autoComplete="email"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="auth-field">
-              <label className="auth-label">Password</label>
-              <div className="auth-input-wrap">
-                <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
-                  <rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <input
-                  type={showPass ? "text" : "password"}
-                  className="auth-input auth-input--pass"
-                  placeholder="Min. 6 characters"
-                  value={form.password}
-                  onChange={set("password")}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  className="auth-eye"
-                  onClick={() => setShowPass(!showPass)}
-                  tabIndex={-1}
-                >
-                  {showPass ? (
-                    <svg viewBox="0 0 20 20" fill="none">
-                      <path d="M3 3l14 14M8.5 8.6A3 3 0 0111.4 11.5M6.3 6.4A7.2 7.2 0 002 10c1.5 3.1 5.5 5 8 5a7.4 7.4 0 003.7-1M9 4.1c.3 0 .7-.1 1-.1 2.5 0 6.5 1.9 8 5a8.2 8.2 0 01-1.7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 20 20" fill="none">
-                      <ellipse cx="10" cy="10" rx="3" ry="3" stroke="currentColor" strokeWidth="1.5"/>
-                      <path d="M2 10c1.5-3.1 5.5-5 8-5s6.5 1.9 8 5c-1.5 3.1-5.5 5-8 5s-6.5-1.9-8-5z" stroke="currentColor" strokeWidth="1.5"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {form.password.length > 0 && (
-                <div className="auth-pass-strength">
-                  <div
-                    className={`auth-pass-bar ${
-                      form.password.length < 6
-                        ? "apb--weak"
-                        : form.password.length < 10
-                        ? "apb--medium"
-                        : "apb--strong"
-                    }`}
-                  />
-                  <span className="auth-pass-hint">
-                    {form.password.length < 6
-                      ? "Too short"
-                      : form.password.length < 10
-                      ? "Good"
-                      : "Strong"}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Role toggle */}
-            <div className="auth-field">
-              <label className="auth-label">I am registering as</label>
-              <div className="auth-role-toggle">
-                <button
-                  type="button"
-                  className={`art-btn ${form.role === "candidate" ? "art-btn--active" : ""}`}
-                  onClick={() => setForm({ ...form, role: "candidate" })}
-                >
-                  <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+          {step === 1 ? (
+            <form onSubmit={handleSubmit} className="auth-form">
+              {/* Full Name */}
+              <div className="auth-field">
+                <label className="auth-label">Full Name</label>
+                <div className="auth-input-wrap">
+                  <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
                     <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
-                  Candidate
-                </button>
-                <button
-                  type="button"
-                  className={`art-btn ${form.role === "admin" ? "art-btn--active" : ""}`}
-                  onClick={() => setForm({ ...form, role: "admin" })}
-                >
-                  <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
-                    <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M10 3v1.5M10 15.5V17M3 10h1.5M15.5 10H17M4.93 4.93l1.06 1.06M14.01 14.01l1.06 1.06M4.93 15.07l1.06-1.06M14.01 5.99l1.06-1.06" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                  HR / Admin
-                </button>
+                  <input
+                    type="text"
+                    className="auth-input"
+                    placeholder="Your full name"
+                    value={form.name}
+                    onChange={set("name")}
+                    autoComplete="name"
+                  />
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              className={`auth-btn-primary ${loading ? "auth-btn--loading" : ""}`}
-              disabled={loading}
-            >
-              {loading ? <span className="auth-spinner" /> : "Create Account"}
-            </button>
-          </form>
+              {/* Email */}
+              <div className="auth-field">
+                <label className="auth-label">Email address</label>
+                <div className="auth-input-wrap">
+                  <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
+                    <path d="M2.5 6.5L10 11l7.5-4.5M3 5h14a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <input
+                    type="email"
+                    className="auth-input"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={set("email")}
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="auth-field">
+                <label className="auth-label">Password</label>
+                <div className="auth-input-wrap">
+                  <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none">
+                    <rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <input
+                    type={showPass ? "text" : "password"}
+                    className="auth-input auth-input--pass"
+                    placeholder="Min. 6 characters"
+                    value={form.password}
+                    onChange={set("password")}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="auth-eye"
+                    onClick={() => setShowPass(!showPass)}
+                    tabIndex={-1}
+                  >
+                    {showPass ? (
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <path d="M3 3l14 14M8.5 8.6A3 3 0 0111.4 11.5M6.3 6.4A7.2 7.2 0 002 10c1.5 3.1 5.5 5 8 5a7.4 7.4 0 003.7-1M9 4.1c.3 0 .7-.1 1-.1 2.5 0 6.5 1.9 8 5a8.2 8.2 0 01-1.7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <ellipse cx="10" cy="10" rx="3" ry="3" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M2 10c1.5-3.1 5.5-5 8-5s6.5 1.9 8 5c-1.5 3.1-5.5 5-8 5s-6.5-1.9-8-5z" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {form.password.length > 0 && (
+                  <div className="auth-pass-strength">
+                    <div
+                      className={`auth-pass-bar ${
+                        form.password.length < 6
+                          ? "apb--weak"
+                          : form.password.length < 10
+                          ? "apb--medium"
+                          : "apb--strong"
+                      }`}
+                    />
+                    <span className="auth-pass-hint">
+                      {form.password.length < 6
+                        ? "Too short"
+                        : form.password.length < 10
+                        ? "Good"
+                        : "Strong"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Role toggle */}
+              <div className="auth-field">
+                <label className="auth-label">I am registering as</label>
+                <div className="auth-role-toggle">
+                  <button
+                    type="button"
+                    className={`art-btn ${form.role === "candidate" ? "art-btn--active" : ""}`}
+                    onClick={() => setForm({ ...form, role: "candidate" })}
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                      <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    Candidate
+                  </button>
+                  <button
+                    type="button"
+                    className={`art-btn ${form.role === "admin" ? "art-btn--active" : ""}`}
+                    onClick={() => setForm({ ...form, role: "admin" })}
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M10 3v1.5M10 15.5V17M3 10h1.5M15.5 10H17M4.93 4.93l1.06 1.06M14.01 14.01l1.06 1.06M4.93 15.07l1.06-1.06M14.01 5.99l1.06-1.06" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    HR / Admin
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className={`auth-btn-primary ${loading ? "auth-btn--loading" : ""}`}
+                disabled={loading}
+              >
+                {loading ? <span className="auth-spinner" /> : "Create Account"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerify} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Verification Code (OTP)</label>
+                <div className="auth-input-wrap">
+                  <input
+                    type="text"
+                    className="auth-input"
+                    placeholder="Enter 6-digit code"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className={`auth-btn-primary ${loading ? "auth-btn--loading" : ""}`}
+                disabled={loading}
+              >
+                {loading ? <span className="auth-spinner" /> : "Verify & Login"}
+              </button>
+              <button
+                type="button"
+                className="auth-btn-outline"
+                style={{ width: '100%', marginTop: 8, padding: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontWeight: 600, color: 'var(--text-secondary)' }}
+                onClick={() => setStep(1)}
+              >
+                Back to Registration
+              </button>
+            </form>
+          )}
 
           <p className="auth-switch">
             Already have an account?{" "}
