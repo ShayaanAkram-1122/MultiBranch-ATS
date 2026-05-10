@@ -12,7 +12,27 @@ connectDB();
 const app  = express();
 const PORT = Number(process.env.PORT) || 5055;
 
-app.use(cors({ origin: true, credentials: true }));
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://multi-branch-ats.vercel.app',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+const extraOrigins = (process.env.CLIENT_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+const allowedOrigins = [...DEFAULT_ALLOWED_ORIGINS, ...extraOrigins];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
