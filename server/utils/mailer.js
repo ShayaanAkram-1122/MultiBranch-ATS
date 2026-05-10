@@ -1,4 +1,10 @@
+const dns = require('dns');
+const dnsPromises = dns.promises;
 const nodemailer = require('nodemailer');
+
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 function escapeHtml(s) {
   if (s == null || s === '') return '';
@@ -9,11 +15,20 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** Gmail over implicit TLS (465) or STARTTLS (587). OTP is fine — timeouts are almost always SMTP/network, not “OTP generation”. */
-function buildGmailTransport(port) {
+/**
+ * Connect by IPv4 literal so Render (no outbound IPv6) never hits AAAA → ENETUNREACH.
+ * TLS must use servername smtp.gmail.com for the cert.
+ */
+async function smtpGmailIPv4Host() {
+  const { address } = await dnsPromises.lookup('smtp.gmail.com', { family: 4 });
+  return address;
+}
+
+/** Gmail over implicit TLS (465) or STARTTLS (587). `host` should be an IPv4 from smtpGmailIPv4Host(). */
+function buildGmailTransport(port, host) {
   const secure = port === 465;
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host,
     port,
     secure,
     auth: {
@@ -23,9 +38,8 @@ function buildGmailTransport(port) {
     connectionTimeout: 45_000,
     greetingTimeout: 20_000,
     socketTimeout: 45_000,
-    tls: { servername: 'smtp.gmail.com' },
+    tls: { servername: 'smtp.gmail.com', minVersion: 'TLSv1.2' },
     requireTLS: !secure,
-    family: 4,
   });
 }
 
@@ -35,9 +49,18 @@ async function sendWithGmailSmtp({ to, subject, html }) {
   const ports = preferred === 465 ? [465, 587] : [587, 465];
   const tried = [...new Set(ports)];
 
+  let host;
+  try {
+    host = await smtpGmailIPv4Host();
+    console.log(`[Mailer] Gmail SMTP using IPv4 ${host}`);
+  } catch (e) {
+    console.error('[Mailer] smtp.gmail.com IPv4 lookup failed:', e.message);
+    host = 'smtp.gmail.com';
+  }
+
   let lastErr = null;
   for (const port of tried) {
-    const transport = buildGmailTransport(port);
+    const transport = buildGmailTransport(port, host);
     try {
       await transport.sendMail({ from, to, subject, html });
       console.log(`[Mailer] Gmail SMTP ok → ${to} (port ${port})`);
@@ -83,7 +106,7 @@ async function sendWithResend({ to, subject, html }) {
  * sendMail({ to, subject, html })
  * Prefer HTTPS providers on hosts that block or throttle outbound SMTP (common on PaaS).
  * Set RESEND_API_KEY + RESEND_FROM, or GMAIL_USER + GMAIL_PASS (App Password).
- * Optional: SMTP_PORT=587 if 465 keeps timing out.
+ * Optional: SMTP_PORT=587 if 465 keeps timing out. Gmail uses resolved IPv4 + TLS servername to avoid ENETUNREACH on IPv6-only paths (e.g. Render).
  * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
  */
 async function sendMail({ to, subject, html }) {
