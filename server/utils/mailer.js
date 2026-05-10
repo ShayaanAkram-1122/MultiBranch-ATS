@@ -19,8 +19,13 @@ const transporter = nodemailer.createTransport({
 
 /**
  * sendMail({ to, subject, html })
+ * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
  */
 async function sendMail({ to, subject, html }) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    console.error('[Mailer] Missing GMAIL_USER or GMAIL_PASS');
+    return { ok: false, error: 'Email is not configured on the server' };
+  }
   try {
     await transporter.sendMail({
       from: `"HireFlow ATS" <${process.env.GMAIL_USER}>`,
@@ -29,9 +34,10 @@ async function sendMail({ to, subject, html }) {
       html,
     });
     console.log(`[Mailer] Email sent to ${to}`);
+    return { ok: true };
   } catch (err) {
-    // Non-fatal — log but don't crash the request
     console.error('[Mailer] Failed to send email:', err.message);
+    return { ok: false, error: err.message || 'Send failed' };
   }
 }
 

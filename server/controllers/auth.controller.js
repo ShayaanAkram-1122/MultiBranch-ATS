@@ -29,8 +29,13 @@ async function register(req, res) {
       exists.passwordHash = password; // Update password to new one
       await exists.save();
       
-      await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
-      return res.status(200).json({ message: 'Verification OTP resent to email.', email });
+      const mail = await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
+      return res.status(200).json({
+        message: 'Verification OTP resent to email.',
+        email,
+        emailSent: mail.ok,
+        ...(mail.ok ? {} : { emailError: mail.error }),
+      });
     }
 
     const otp = generateOTP();
@@ -44,8 +49,14 @@ async function register(req, res) {
       verifyOTPExpiry: Date.now() + 10 * 60 * 1000
     });
 
-    await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
-    res.status(201).json({ message: 'OTP sent to email. Please verify to continue.', email, needsVerification: true });
+    const mail = await sendMail({ to: email, ...templates.verifyEmail(name, otp) });
+    res.status(201).json({
+      message: 'OTP sent to email. Please verify to continue.',
+      email,
+      needsVerification: true,
+      emailSent: mail.ok,
+      ...(mail.ok ? {} : { emailError: mail.error }),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error during registration' });
@@ -71,10 +82,15 @@ async function verifyEmail(req, res) {
     user.verifyOTPExpiry = null;
     await user.save();
 
-    await sendMail({ to: email, ...templates.welcome(user.name) });
+    const welcomeMail = await sendMail({ to: email, ...templates.welcome(user.name) });
 
     const token = signToken(user._id);
-    res.json({ token, user, message: 'Email verified successfully!' });
+    res.json({
+      token,
+      user,
+      message: 'Email verified successfully!',
+      welcomeEmailSent: welcomeMail.ok,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error during verification' });
@@ -120,9 +136,14 @@ async function forgotPassword(req, res) {
     user.resetOTPExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    await sendMail({ to: email, ...templates.resetPassword(user.name, otp) });
+    const mail = await sendMail({ to: email, ...templates.resetPassword(user.name, otp) });
 
-    res.json({ message: 'Password reset OTP sent to email', email });
+    res.json({
+      message: 'Password reset OTP sent to email',
+      email,
+      emailSent: mail.ok,
+      ...(mail.ok ? {} : { emailError: mail.error }),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

@@ -41,7 +41,14 @@ export default function SignUp() {
         password: form.password,
         role: form.role === "admin" ? "admin" : "applicant",
       });
-      setMessage(data.message);
+      const baseMsg = data.message || "";
+      if (data.emailSent === false) {
+        setMessage(
+          `${baseMsg} However, the server could not send email (${data.emailError || "check server email settings"}). Ask your admin to set GMAIL_USER and GMAIL_PASS on Render, or use an App Password for Gmail.`
+        );
+      } else {
+        setMessage(baseMsg);
+      }
       setStep(2); // Move to OTP step
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");

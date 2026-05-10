@@ -99,7 +99,13 @@ export default function SignIn() {
     setLoading(true);
     try {
       const { data } = await api.post("/auth/forgot-password", { email });
-      setMessage(data.message);
+      if (data.emailSent === false) {
+        setMessage(
+          `${data.message || ""} Email was not delivered (${data.emailError || "server mail not configured"}).`
+        );
+      } else {
+        setMessage(data.message);
+      }
       setStep(4);
     } catch (err) {
       setError(err.response?.data?.message || "Error requesting password reset");
