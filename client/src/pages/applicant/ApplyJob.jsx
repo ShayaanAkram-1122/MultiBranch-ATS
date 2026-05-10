@@ -4,6 +4,7 @@ import { FiUpload, FiFileText, FiArrowLeft } from 'react-icons/fi';
 import ApplicantLayout from '../../components/layouts/ApplicantLayout';
 import { applicationService } from '../../services/application.service';
 import { jobService } from '../../services/job.service';
+import { uploadFileToCloudinary } from '../../utils/cloudinaryUpload';
 
 export default function ApplyJob() {
   const { jobId }   = useParams();
@@ -19,25 +20,18 @@ export default function ApplyJob() {
     jobService.getById(jobId).then(({ data }) => setJob(data)).catch(() => {});
   }, [jobId]);
 
-  // Cloudinary upload helper
   const uploadToCloudinary = async (file, type) => {
     const key = type === 'resume' ? 'resume' : 'cover';
-    setUploading(u => ({ ...u, [key]: true }));
+    setError('');
+    setUploading((u) => ({ ...u, [key]: true }));
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_PRESET || 'ats_uploads');
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD}/upload`,
-        { method: 'POST', body: formData }
-      );
-      const data = await res.json();
-      if (type === 'resume') setForm(f => ({ ...f, resumeUrl: data.secure_url }));
-      else setForm(f => ({ ...f, coverLetterUrl: data.secure_url }));
-    } catch {
-      setError('File upload failed. Please try again.');
+      const url = await uploadFileToCloudinary(file);
+      if (type === 'resume') setForm((f) => ({ ...f, resumeUrl: url }));
+      else setForm((f) => ({ ...f, coverLetterUrl: url }));
+    } catch (e) {
+      setError(e?.message || 'File upload failed. Please try again.');
     } finally {
-      setUploading(u => ({ ...u, [key]: false }));
+      setUploading((u) => ({ ...u, [key]: false }));
     }
   };
 

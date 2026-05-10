@@ -1,11 +1,23 @@
 const Application = require('../models/Application');
 const Job         = require('../models/Job');
+const User        = require('../models/User');
+const Interview   = require('../models/Interview');
 const { sendMail, templates } = require('../utils/mailer');
+const { withCloudinaryDeliveryFields } = require('../utils/cloudinaryDelivery');
+
+const STATUS_ENUM = [
+  'Submitted',
+  'Under Review',
+  'Shortlisted',
+  'Interview Scheduled',
+  'Selected',
+  'Rejected',
+];
 
 // POST /api/applications  — applicant
 async function apply(req, res) {
   try {
-    const { job: jobId, resumeUrl, coverLetterUrl } = req.body;
+    const { job: jobId, resumeUrl, coverLetterUrl, coverLetter: additionalMessage } = req.body;
 
     const job = await Job.findById(jobId).populate('branch');
     if (!job)       return res.status(404).json({ message: 'Job not found' });
@@ -23,6 +35,45 @@ async function apply(req, res) {
       coverLetterUrl: coverLetterUrl || '',
     });
 
+    const applicantEmail = req.user.email;
+    const companyName =
+      (job.company && String(job.company).trim()) ||
+      (job.branch?.name && `${job.branch.name}`) ||
+      'HireFlow';
+
+    const { subject, html } = templates.applicationSubmitted({
+      applicantName: req.user.name || 'Candidate',
+      jobTitle: job.title,
+      company: companyName,
+      department: job.department,
+      branchName: job.branch?.name,
+      branchCity: job.branch?.city,
+      jobType: job.type,
+      workMode: job.workMode,
+      experienceLevel: job.experienceLevel,
+      salaryRange: job.salaryRange,
+      requirements: job.requirements,
+      additionalMessage: typeof additionalMessage === 'string' ? additionalMessage.trim() : '',
+    });
+
+    await sendMail({ to: applicantEmail, subject, html });
+
+    const admins = await User.find({ role: 'admin' }).select('name email');
+    for (const admin of admins) {
+      if (!admin.email) continue;
+      const { subject: as, html: ah } = templates.adminNewApplication({
+        adminName: admin.name,
+        applicantName: req.user.name || 'Candidate',
+        applicantEmail,
+        jobTitle: job.title,
+        branchName: job.branch?.name,
+        resumeUrl: resumeUrl || '',
+        coverLetterUrl: coverLetterUrl || '',
+        additionalMessage: typeof additionalMessage === 'string' ? additionalMessage.trim() : '',
+      });
+      await sendMail({ to: admin.email, subject: as, html: ah });
+    }
+
     res.status(201).json(application);
   } catch (err) {
     console.error(err);
@@ -38,7 +89,28 @@ async function myApplications(req, res) {
       .populate('branch', 'name city')
       .sort({ createdAt: -1 });
 
-    res.json({ applications });
+    const ids = applications.map((a) => a._id);
+    const interviews = await Interview.find({ application: { $in: ids } }).sort({ scheduledAt: -1 });
+    const interviewByApp = {};
+    interviews.forEach((iv) => {
+      const key = iv.application.toString();
+      if (!interviewByApp[key]) interviewByApp[key] = iv;
+    });
+
+    const enriched = applications.map((a) => {
+      const plain = withCloudinaryDeliveryFields(a);
+      const iv = interviewByApp[a._id.toString()];
+      if (iv) {
+        plain.interview = {
+          scheduledAt: iv.scheduledAt,
+          location: iv.location,
+          notes: iv.notes,
+        };
+      }
+      return plain;
+    });
+
+    res.json({ applications: enriched });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -60,7 +132,9 @@ async function getAllApplications(req, res) {
       .populate('branch',    'name city')
       .sort({ createdAt: -1 });
 
-    res.json({ applications });
+    res.json({
+      applications: applications.map((a) => withCloudinaryDeliveryFields(a)),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -82,7 +156,7 @@ async function getApplicationById(req, res) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    res.json(app);
+    res.json(withCloudinaryDeliveryFields(app));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -93,6 +167,9 @@ async function getApplicationById(req, res) {
 async function updateStatus(req, res) {
   try {
     const { status, adminNotes } = req.body;
+    if (!STATUS_ENUM.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
     const app = await Application.findByIdAndUpdate(
       req.params.id,
       { status, ...(adminNotes !== undefined && { adminNotes }) },
