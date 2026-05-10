@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const jobSchema = new mongoose.Schema(
   {
     title:           { type: String, required: true, trim: true },
+    company:         { type: String, default: '', trim: true },
     description:     { type: String, required: true },
     department:      { type: String, default: '' },
     branch:          { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true },
+    importedFromCsv: { type: Boolean, default: false },
     type:            { type: String, enum: ['Full-time', 'Part-time', 'Contract', 'Internship'], default: 'Full-time' },
     workMode:        { type: String, enum: ['On-site', 'Remote', 'Hybrid'], default: 'On-site' },
     experienceLevel: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Lead'], default: 'Mid' },

@@ -5,7 +5,16 @@ import Loader from '../../components/shared/Loader';
 import { jobService } from '../../services/job.service';
 import { branchService } from '../../services/other.service';
 
-const EMPTY = { title:'', department:'', description:'', requirements:'', type:'Full-time', seatsAvailable:1, branch:'' };
+const EMPTY = {
+  title: '',
+  department: '',
+  description: '',
+  requirements: '',
+  type: 'Full-time',
+  workMode: 'On-site',
+  seatsAvailable: 1,
+  branch: '',
+};
 
 export default function AdminJobs() {
   const [jobs, setJobs]     = useState([]);
@@ -28,7 +37,20 @@ export default function AdminJobs() {
     } finally { setLoading(false); }
   };
 
-  const openModal  = (job = null) => { setEditing(job); setForm(job ? { ...job, branch: job.branch?._id || job.branch } : EMPTY); setError(''); setModal(true); };
+  const openModal = (job = null) => {
+    setEditing(job);
+    setForm(
+      job
+        ? {
+            ...job,
+            branch: job.branch?._id || job.branch,
+            workMode: job.workMode || 'On-site',
+          }
+        : { ...EMPTY }
+    );
+    setError('');
+    setModal(true);
+  };
   const closeModal = () => { setModal(false); setEditing(null); setForm(EMPTY); };
 
   const handleSave = async (e) => {
@@ -106,10 +128,20 @@ export default function AdminJobs() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Job Type</label>
-                  <select className="form-control" value={form.type} onChange={(e) => setForm({...form, type:e.target.value})}>
-                    {['Full-time','Part-time','Contract','Remote'].map(t => <option key={t}>{t}</option>)}
+                  <select className="form-control" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                    {['Full-time', 'Part-time', 'Contract', 'Internship'].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
                   </select>
                 </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Work mode</label>
+                <select className="form-control" value={form.workMode} onChange={(e) => setForm({ ...form, workMode: e.target.value })}>
+                  {['On-site', 'Remote', 'Hybrid'].map((w) => (
+                    <option key={w} value={w}>{w}</option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-2">
                 <div className="form-group">
@@ -121,7 +153,7 @@ export default function AdminJobs() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Available Seats</label>
-                  <input type="number" min={1} className="form-control" value={form.seatsAvailable} onChange={(e) => setForm({...form, seatsAvailable:e.target.value})} />
+                  <input type="number" min={1} className="form-control" value={form.seatsAvailable} onChange={(e) => setForm({ ...form, seatsAvailable: Number(e.target.value) })} />
                 </div>
               </div>
               <div className="form-group">

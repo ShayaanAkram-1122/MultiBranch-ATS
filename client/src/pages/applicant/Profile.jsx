@@ -13,7 +13,16 @@ export default function Profile() {
   const [error, setError]     = useState('');
 
   useEffect(() => {
-    if (user) setForm(f => ({ ...f, name: user.name || '', email: user.email || '', phone: user.phone || '', bio: user.bio || '', profilePicUrl: user.profilePicUrl || '' }));
+    if (!user) return;
+    const pic = user.avatarUrl || user.profilePicUrl || '';
+    setForm((f) => ({
+      ...f,
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      bio: user.bio || '',
+      profilePicUrl: pic,
+    }));
   }, [user]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,8 +44,15 @@ export default function Profile() {
     e.preventDefault();
     setSaving(true); setError(''); setSuccess('');
     try {
-      const { data } = await api.put('/auth/profile', form);
-      login(data.user, token);
+      const { data } = await api.put('/auth/me', {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        bio: form.bio,
+        avatarUrl: form.profilePicUrl || '',
+      });
+      const nextUser = data.user ?? data;
+      login(nextUser, token);
       setSuccess('Profile updated successfully!');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile.');
